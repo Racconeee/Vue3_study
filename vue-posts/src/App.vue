@@ -1,11 +1,12 @@
-<script setup></script>
+<script setup>
+import TheHeader from '@/layouts/TheHeader.vue';
+import TheView from '@/layouts/TheView.vue';
+</script>
 
 <template>
-	<main>
-		<div class="container py-4">
-			<h2>Hello Vue</h2>
-		</div>
-	</main>
+	<TheHeader></TheHeader>
+
+	<TheView></TheView>
 </template>
 
 <style scoped></style>
