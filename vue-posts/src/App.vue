@@ -17,4 +17,23 @@ import TheView from '@/layouts/TheView.vue';
 	margin: 0;
 	padding: 0;
 }
+
+html, body, #app {
+  width: 100%;
+  height: 100%;
+  margin: 0;  padding: 0;
+  box-sizing: border-box;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+}
+
+.router-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
 </style>
