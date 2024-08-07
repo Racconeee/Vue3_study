@@ -9,3 +9,5 @@ import { createApp } from 'vue';
 createApp(App).use(router).mount('#app');
 
 import 'bootstrap/dist/js/bootstrap.js';
+
+console.log('213' + import.meta.env.VITE_APP_API_URL);

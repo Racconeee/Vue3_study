@@ -2,47 +2,46 @@
 	<div>
 		<h2>게시글 목록</h2>
 		<hr class="my-4" />
-		<div class="row g-3">
-			<div v-for="post in posts" :key="post.id" class="col-4">
+		<PostFilter v-model:title="params.title_like" v-model:limit="params._limit">
+		</PostFilter>
+
+		<hr class="my-4" />
+		<AppGrid :items="posts">
+			<template v-slot="{ item }">
 				<PostItem
-					:title="post.title"
-					:content="post.content"
-					:createdAt="post.createdAt"
-					@click="goPage(post.id)"
+					:title="item.title"
+					:content="item.content"
+					:createdAt="item.createdAt"
+					@click="goPage(item.id)"
 				>
 				</PostItem>
-			</div>
-		</div>
-		<nav aria-label="Page navigation example">
-			<ul class="pagination justify-content-center">
-				<li class="page-item">
-					<a class="page-link" href="#" aria-label="Previous">
-						<span aria-hidden="true">&laquo;</span>
-					</a>
-				</li>
-				<li class="page-item"><a class="page-link" href="#">1</a></li>
-				<li class="page-item"><a class="page-link" href="#">2</a></li>
-				<li class="page-item"><a class="page-link" href="#">3</a></li>
-				<li class="page-item">
-					<a class="page-link" href="#" aria-label="Next">
-						<span aria-hidden="true">&raquo;</span>
-					</a>
-				</li>
-			</ul>
-		</nav>
-		<hr class="my-5" />
-		<AppCard>
-			<PostDetailView :id="3"></PostDetailView>
-		</AppCard>
+			</template>
+		</AppGrid>
+		<AppPagination
+			:current-page="params._page"
+			:page-count="pageCount"
+			@page="page => (params._page = page)"
+		>
+		</AppPagination>
+		<template v-if="posts && posts.length > 0">
+			<hr class="my-5" />
+			<AppCard>
+				<PostDetailView :id="posts[0].id"></PostDetailView>
+			</AppCard>
+		</template>
 	</div>
 </template>
 
 <script setup>
 import PostItem from '@/components/posts/PostItem.vue';
 import PostDetailView from '@/views/posts/PostDetailView.vue';
+import PostFilter from '@/components/posts/PostFilter.vue';
 import AppCard from '@/components/AppCard.vue';
+import AppPagination from '@/components/AppPagination.vue';
+import AppGrid from '@/components/AppGrid.vue';
+
 import { getPosts } from '@/api/posts';
-import { ref } from 'vue';
+import { computed, ref, watchEffect } from 'vue';
 import { useRouter } from 'vue-router';
 
 const posts = ref([]);
@@ -50,13 +49,22 @@ const router = useRouter();
 const params = ref({
 	_sort: 'createAt',
 	_order: 'desc',
+	_page: 1,
 	_limit: 3,
+	title_like: '',
 });
+
+const totalCount = ref(0);
+//총 개수에서 몇개씩 보여줄것인지로 나눠서 pagecount 를 만듬
+const pageCount = computed(() =>
+	Math.ceil(totalCount.value / params.value._limit),
+);
 
 const fetchPosts = async () => {
 	try {
-		const { data } = await getPosts(params.value);
+		const { data, headers } = await getPosts(params.value);
 		posts.value = data;
+		totalCount.value = headers['x-total-count'];
 	} catch (error) {
 		console.log(error);
 	}
@@ -74,7 +82,8 @@ const fetchPosts = async () => {
 // 		});
 // };
 
-fetchPosts();
+watchEffect(fetchPosts);
+// fetchPosts();
 const goPage = id => {
 	// router.push(`/posts/${id}`);
 	router.push({
