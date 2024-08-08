@@ -32,6 +32,19 @@ defineProps({
 	content: String,
 });
 defineEmits(['update:title', 'update:content']);
+
+const save = () => {
+	try {
+		createPost({
+			...form.value,
+			createAt: Date.now(),
+		});
+
+		// router.push({ name: 'PostList' });
+	} catch (error) {
+		console.log(error);
+	}
+};
 </script>
 
 <style></style>

@@ -5,7 +5,7 @@
 		<PostForm
 			v-model:title="form.title"
 			v-model:content="form.content"
-			@submit.prevent="save"
+			@submit.prevent="edit"
 		>
 			<template #actions>
 				<button
@@ -15,17 +15,19 @@
 				>
 					취소
 				</button>
-				<button @click="edit" class="btn btn-primary">수정</button>
+				<button class="btn btn-primary">수정</button>
 			</template>
 		</PostForm>
-		<AppAlert :show="showAlert" :message="alertMessage"> </AppAlert>
+		<!-- <AppAlert :show="showAlert" :message="alertMessage" :type="alertType">
+		</AppAlert> -->
+		<AppAlert :items="alerts"></AppAlert>
 	</div>
 </template>
 
 <script setup>
 import { ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { getPostById, updatePost, createPost } from '@/api/posts';
+import { getPostById, updatePost } from '@/api/posts';
 import PostForm from '@/components/posts/PostForm.vue';
 import AppAlert from '@/components/AppAlert.vue';
 
@@ -62,24 +64,33 @@ const edit = async () => {
 		console.log(form.value);
 		await updatePost(id, { ...form.value });
 		// router.push({ name: 'PostDetail', params: { id } });
-		vAlert('수정이 완료되었습니다');
+		vAlert('수정이 완료되었습니다', 'sueccess');
+		console.log(2);
 	} catch (error) {
 		console.error(error);
-		vAlert('네트워크 오류');
+		vAlert('Error 발생 !! ', 'error.value');
 	}
 };
 
 //alert
-const alertMessage = ref('');
-const showAlert = ref(false);
-const vAlert = message => {
-	console.log('!@#');
-	showAlert.value = true;
+// const alertMessage = ref('');
+// const showAlert = ref(false);
+// const alertType = ref('');
+const alerts = ref([]);
+const vAlert = (message, type = 'error') => {
+	// console.log('!@#');
+	alerts.value.push({ message, type });
+	console.log(1);
+	console.log(alerts.value);
+	// showAlert.value = true;
+	// alertMessage.value = message;
+	// alertType.value = type;
 	setTimeout(() => {
-		showAlert.value = false;
-		alertMessage.value = message;
-		console.log(showAlert);
-		console.log(alertMessage);
+		alerts.value.shift();
+		// showAlert.value = false;
+		// alertMessage.value = message;
+		// console.log(showAlert);
+		// console.log(alertMessage);
 	}, 2000);
 };
 </script>
