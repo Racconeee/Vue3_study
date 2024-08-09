@@ -29,28 +29,31 @@
 import { useRouter } from 'vue-router';
 import { getPostById, deletePost } from '@/api/posts';
 import { ref } from 'vue';
+import { useAxios } from '@/hooks/useAxios';
 
 const props = defineProps({
 	id: [String, Number],
 });
 const router = useRouter();
-const post = ref({});
+// const post = ref({});
 
-const fetchPost = async () => {
-	try {
-		const { data } = await getPostById(props.id);
-		setPost(data);
-	} catch (error) {
-		console.log(error);
-	}
-};
+const { error, loading, data: post } = useAxios(`/posts/${props.id}`);
 
-const setPost = ({ title, content, createdAt }) => {
-	post.value.title = title;
-	post.value.content = content;
-	post.value.createdAt = createdAt;
-};
-fetchPost();
+// const fetchPost = async () => {
+// 	try {
+// 		const { data } = await getPostById(props.id);
+// 		setPost(data);
+// 	} catch (error) {
+// 		console.log(error);
+// 	}
+// };
+
+// const setPost = ({ title, content, createdAt }) => {
+// 	post.value.title = title;
+// 	post.value.content = content;
+// 	post.value.createdAt = createdAt;
+// };
+// fetchPost();
 
 const remove = async () => {
 	try {
