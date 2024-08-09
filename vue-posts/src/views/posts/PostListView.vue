@@ -6,25 +6,31 @@
 		</PostFilter>
 
 		<hr class="my-4" />
-		<AppGrid :items="posts">
-			<template v-slot="{ item }">
-				<PostItem
-					:title="item.title"
-					:content="item.content"
-					:createdAt="item.createdAt"
-					@click="goPage(item.id)"
-					@modal="openModal(item)"
-				>
-				</PostItem>
-			</template>
-		</AppGrid>
-		<AppPagination
-			:current-page="params._page"
-			:page-count="pageCount"
-			@page="page => (params._page = page)"
-		>
-		</AppPagination>
 
+		<AppLoading v-if="loading"></AppLoading>
+
+		<AppError v-else-if="error" :message="error.message"></AppError>
+
+		<template v-else>
+			<AppGrid :items="posts">
+				<template v-slot="{ item }">
+					<PostItem
+						:title="item.title"
+						:content="item.content"
+						:createdAt="item.createdAt"
+						@click="goPage(item.id)"
+						@modal="openModal(item)"
+					>
+					</PostItem>
+				</template>
+			</AppGrid>
+			<AppPagination
+				:current-page="params._page"
+				:page-count="pageCount"
+				@page="page => (params._page = page)"
+			>
+			</AppPagination>
+		</template>
 		<PostModal
 			v-model="show"
 			:title="modalTitle"
@@ -47,15 +53,16 @@ import PostItem from '@/components/posts/PostItem.vue';
 import PostDetailView from '@/views/posts/PostDetailView.vue';
 import PostFilter from '@/components/posts/PostFilter.vue';
 import PostModal from '@/components/posts/PostModal.vue';
-import AppCard from '@/components/AppCard.vue';
-import AppPagination from '@/components/AppPagination.vue';
-import AppGrid from '@/components/AppGrid.vue';
 
-import { getPosts } from '@/api/posts';
-import { computed, ref, watchEffect } from 'vue';
+// import { getPosts } from '@/api/posts';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useAxios } from '@/hooks/useAxios';
 
-const posts = ref([]);
+//컴포저블 함수
+// const error = ref(null);
+// const loading = ref(false);
+
 const router = useRouter();
 const params = ref({
 	_sort: 'createAt',
@@ -65,21 +72,31 @@ const params = ref({
 	title_like: '',
 });
 
-const totalCount = ref(0);
+const {
+	response,
+	data: posts,
+	error,
+	loading,
+} = useAxios('/posts', { params });
+
+const totalCount = computed(() => response.value.headers['x-total-count']);
 //총 개수에서 몇개씩 보여줄것인지로 나눠서 pagecount 를 만듬
 const pageCount = computed(() =>
 	Math.ceil(totalCount.value / params.value._limit),
 );
-
-const fetchPosts = async () => {
-	try {
-		const { data, headers } = await getPosts(params.value);
-		posts.value = data;
-		totalCount.value = headers['x-total-count'];
-	} catch (error) {
-		console.log(error);
-	}
-};
+// 데이터 받아와서 뿌려주기
+// const fetchPosts = async () => {
+// 	try {
+// 		loading.value = true;
+// 		const { data, headers } = await getPosts(params.value);
+// 		posts.value = data;
+// 		totalCount.value = headers['x-total-count'];
+// 	} catch (err) {
+// 		error.value = err;
+// 	} finally {
+// 		loading.value = false;
+// 	}
+// };
 
 // 위의 코드와 같은 모습으로 동작하게 된다.
 // const fetchPosts = () => {
@@ -93,7 +110,7 @@ const fetchPosts = async () => {
 // 		});
 // };
 
-watchEffect(fetchPosts);
+// watchEffect(fetchPosts);
 // fetchPosts();
 const goPage = id => {
 	// router.push(`/posts/${id}`);
@@ -102,10 +119,10 @@ const goPage = id => {
 		params: {
 			id,
 		},
-		query: {
-			searchText: 'hello',
-		},
-		hash: '#world',
+		// query: {
+		// 	searchText: 'hello',
+		// },
+		// hash: '#world',
 	});
 };
 const modalTitle = ref('asdasd');

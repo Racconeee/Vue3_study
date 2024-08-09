@@ -29,7 +29,7 @@ import { ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { getPostById, updatePost } from '@/api/posts';
 import PostForm from '@/components/posts/PostForm.vue';
-import AppAlert from '@/components/AppAlert.vue';
+import { useAxios } from '@/hooks/useAxios';
 
 const route = useRoute();
 const router = useRouter();
@@ -42,10 +42,12 @@ const goDetailPage = () => {
 	});
 };
 
-const form = ref({
-	title: null,
-	content: null,
-});
+// const form = ref({
+// 	title: null,
+// 	content: null,
+// });
+
+const { error, loading, data: form } = useAxios(`/posts/${id}`);
 
 const fetchPost = async () => {
 	const { data } = await getPostById(id);
